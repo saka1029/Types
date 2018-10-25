@@ -1,4 +1,4 @@
-package types;
+package types1;
 
 public class SimpleType implements ConcreteType {
 
@@ -10,10 +10,11 @@ public class SimpleType implements ConcreteType {
 
     @Override
     public boolean unify(Type t, Bind b) {
-        if (t instanceof Variable)
+        if (t == this)
+            return true;
+        else if (t instanceof VariableType)
             return t.unify(this, b);
-        else
-            return t.equals(this);
+        return false;
     }
 
     @Override

@@ -1,16 +1,15 @@
-package test.types;
+package test.types1;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import types.Bind;
-import types.FunctionType;
-import types.SimpleType;
-import types.VariableGroup;
-import types.VariableType;
+import types1.Bind;
+import types1.FunctionType;
+import types1.SimpleType;
+import types1.VariableType;
 
-public class TestUnify {
+class TestUnify {
 
     static SimpleType INT = new SimpleType("int");
     static SimpleType STRING = new SimpleType("string");
@@ -31,44 +30,11 @@ public class TestUnify {
     }
 
     @Test
-    public void testSimpleTypeVariableType2() {
-        Bind b = new Bind();
-        VariableType x = new VariableType("x");
-        VariableType y = new VariableType("y");
-        assertTrue(INT.unify(x, b));
-        assertEquals(INT, b.get(x));
-        assertTrue(y.unify(x, b));
-        assertEquals(INT, b.get(x));
-        assertEquals(INT, b.get(y));
-    }
-
-    @Test
-    void testFunctionType() {
-        FunctionType f = new FunctionType(INT, INT, INT);
-        assertEquals("fn[int, int, int]", f.toString());
-    }
-
-    @Test
-    void testFunctionTypeSimpleType() {
-        Bind b = new Bind();
-        FunctionType f = new FunctionType(INT, INT, INT);
-        assertFalse(f.unify(INT, b));
-    }
-
-    @Test
     void testFunctionTypeFunctionType() {
         Bind b = new Bind();
         FunctionType f1 = new FunctionType(INT, INT, INT);
         FunctionType f2 = new FunctionType(INT, INT, INT);
         assertTrue(f1.unify(f2, b));
-    }
-
-    @Test
-    void testFunctionTypeFunctionTypeFail() {
-        Bind b = new Bind();
-        FunctionType f1 = new FunctionType(INT, INT, INT);
-        FunctionType f2 = new FunctionType(INT, INT);
-        assertFalse(f1.unify(f2, b));
     }
 
     @Test
@@ -120,22 +86,10 @@ public class TestUnify {
         VariableType v4 = new VariableType("v4");
         assertTrue(v1.unify(v2, b));
         System.out.println(b);
-        assertTrue(b.get(v1) instanceof VariableGroup);
-        assertEquals(2, ((VariableGroup)b.get(v1)).size());
-        assertTrue(((VariableGroup)b.get(v1)).contains(v1));
-        assertTrue(((VariableGroup)b.get(v1)).contains(v2));
         assertTrue(v3.unify(v4, b));
         System.out.println(b);
-        assertTrue(b.get(v3) instanceof VariableGroup);
-        assertTrue(((VariableGroup)b.get(v3)).contains(v3));
-        assertTrue(((VariableGroup)b.get(v3)).contains(v4));
         assertTrue(v1.unify(v3, b));
         System.out.println(b);
-        assertTrue(b.get(v1) instanceof VariableGroup);
-        assertTrue(((VariableGroup)b.get(v1)).contains(v1));
-        assertTrue(((VariableGroup)b.get(v1)).contains(v2));
-        assertTrue(((VariableGroup)b.get(v1)).contains(v3));
-        assertTrue(((VariableGroup)b.get(v1)).contains(v4));
         assertTrue(v1.unify(INT, b));
         System.out.println(b);
         assertEquals(INT, b.get(v1));
