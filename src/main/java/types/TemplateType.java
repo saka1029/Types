@@ -1,8 +1,8 @@
 package types;
 
-public class FunctionType extends StructureType {
+public class TemplateType extends StructureType {
 
-    public FunctionType(Type... types) {
+    public TemplateType(Type... types) {
         super(types);
     }
 
@@ -10,14 +10,14 @@ public class FunctionType extends StructureType {
     public boolean unify(Type t, Bind b) {
         if (t instanceof Variable)
             return t.unify(this, b);
-        else if (t instanceof FunctionType)
-            return match((FunctionType)t, b);
+        else if (t instanceof TemplateType)
+            return match((TemplateType)t, b);
         else
             return false;
     }
 
     @Override
     public String toString() {
-        return "fn" + types;
+        return "tp" + types;
     }
 }

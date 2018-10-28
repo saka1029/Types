@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import types.Bind;
 import types.FunctionType;
 import types.SimpleType;
+import types.TemplateType;
 import types.VariableGroup;
 import types.VariableType;
 
@@ -14,6 +15,7 @@ public class TestUnify {
 
     static SimpleType INT = new SimpleType("int");
     static SimpleType STRING = new SimpleType("string");
+    static SimpleType DOUBLE = new SimpleType("double");
 
     @Test
     void testSimpleTypeSimpleType() {
@@ -112,6 +114,18 @@ public class TestUnify {
     }
 
     @Test
+    public void testFunctionType5() {
+        Bind b = new Bind();
+        VariableType T = new VariableType("T");
+        VariableType X = new VariableType("X");
+        VariableType Y = new VariableType("Y");
+        VariableType Z = new VariableType("Z");
+        assertTrue(new FunctionType(X, Y, Z).unify(new FunctionType(T, T, T), b));
+        assertTrue(b.get(T) instanceof VariableGroup);
+        assertEquals(4, ((VariableGroup)b.get(T)).size());
+    }
+
+    @Test
     void testVariables() {
         Bind b = new Bind();
         VariableType v1 = new VariableType("v1");
@@ -142,6 +156,88 @@ public class TestUnify {
         assertEquals(INT, b.get(v2));
         assertEquals(INT, b.get(v3));
         assertEquals(INT, b.get(v4));
+    }
+
+    @Test
+    public void testTemplateType() {
+        Bind b = new Bind();
+        VariableType v0 = new VariableType("v0");
+        TemplateType array = new TemplateType(v0);
+        FunctionType newArray = new FunctionType(array, INT);
+        FunctionType set = new FunctionType(array, array, INT, v0);
+        FunctionType get = new FunctionType(v0, array, INT);
+        VariableType v1 = new VariableType("v1");
+        VariableType v2 = new VariableType("v2");
+        VariableType v3 = new VariableType("v3");
+        FunctionType newArrayInt = new FunctionType(v1, INT);
+        FunctionType setArrayIntInt = new FunctionType(v2, v1, INT, INT);
+        FunctionType getArrayInt = new FunctionType(v3, v2, INT);
+        assertTrue(newArrayInt.unify(newArray, b));
+        assertTrue(setArrayIntInt.unify(set, b));
+        assertTrue(getArrayInt.unify(get, b));
+        System.out.println(b);
+    }
+
+    /**
+     * 2.1 型定義
+     * (define :T :T) :T
+     * (+ :int :int) :int
+     * (+ :double :double) :double
+     * 2.2 プログラム
+     * (define x (+ 2 1))
+     * 2.3 型参照
+     * (define :X :Y) :Z
+     * (+ :int :int) :Y
+     * defineの先頭から見て行って各引数に順次型変数を割り当てる。
+     */
+    @Test
+    public void testDefine() {
+        Bind b = new Bind();
+        VariableType T = new VariableType("T");
+        FunctionType define = new FunctionType(T, T, T);
+        FunctionType plusInt = new FunctionType(INT, INT, INT);
+        FunctionType plusDouble = new FunctionType(DOUBLE, DOUBLE, DOUBLE);
+        VariableType X = new VariableType("X");
+        VariableType Y = new VariableType("Y");
+        VariableType Z = new VariableType("Z");
+        FunctionType program = new FunctionType(Z, X, Y);
+        FunctionType add = new FunctionType(Y, INT, INT);
+        assertTrue(program.unify(define, b));
+        System.out.println(b);
+        assertTrue(add.unify(plusInt, b));
+        System.out.println(b);
+        assertEquals(INT, b.get(T));
+        assertEquals(INT, b.get(X));
+        assertEquals(INT, b.get(Y));
+        assertEquals(INT, b.get(Z));
+    }
+
+    @Test
+    public void testGenericArray() {
+        Bind b = new Bind();
+        VariableType T = new VariableType("T");
+        TemplateType Array = new TemplateType(T);
+        FunctionType newArray = new FunctionType(Array, INT);
+        FunctionType set = new FunctionType(Array, Array, INT, T);
+        FunctionType get = new FunctionType(T, Array, INT);
+        VariableType X = new VariableType("X");
+        VariableType Y = new VariableType("Y");
+        VariableType Z = new VariableType("Z");
+        VariableType U = new VariableType("U");
+        assertTrue(new FunctionType(X, INT).unify(newArray, b));
+        assertTrue(new FunctionType(Y, Z, INT, INT).unify(set, b));
+        assertTrue(new FunctionType(U, Y, INT).unify(get, b));
+        System.out.println(b);
+    }
+
+    @Test
+    public void testRecursiveType() {
+        Bind b = new Bind();
+        VariableType X = new VariableType("X");
+        TemplateType t = new TemplateType(X);
+        assertTrue(t.unify(X, b));
+        assertTrue(b.get(X) instanceof TemplateType);
+        assertEquals(t, b.get(X));
     }
 
 }

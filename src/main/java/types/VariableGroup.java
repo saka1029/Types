@@ -7,9 +7,26 @@ public class VariableGroup implements ConcreteType, Variable {
 
     private final Set<VariableType> vars = new HashSet<>();
 
-    public VariableGroup(VariableType... vs) {
-        for (VariableType v : vs)
-            vars.add(v);
+    private VariableGroup() {
+    }
+
+    public static boolean bind(Bind b, VariableType... vs) {
+        VariableGroup g = new VariableGroup();
+        for (VariableType v : vs) {
+            g.vars.add(v);
+            b.put(v, g);
+        }
+        return true;
+    }
+
+    public static boolean bind(Bind b, VariableGroup... gs) {
+        VariableGroup n = new VariableGroup();
+        for (VariableGroup g : gs)
+            for (VariableType v : g.vars) {
+                n.vars.add(v);
+                b.put(v, n);
+            }
+        return true;
     }
 
     public int size() {
@@ -20,13 +37,6 @@ public class VariableGroup implements ConcreteType, Variable {
         return vars.contains(v);
     }
 
-    private boolean mergeGroup(VariableGroup g, Bind b) {
-        vars.addAll(g.vars);
-        for (VariableType v : g.vars)
-            b.put(v, this);
-        return true;
-    }
-
     private boolean bindAll(ConcreteType c, Bind b) {
         for (VariableType v : vars)
             b.put(v, c);
@@ -35,10 +45,17 @@ public class VariableGroup implements ConcreteType, Variable {
 
     @Override
     public boolean unify(Type t, Bind b) {
-        if (t instanceof VariableType)
-            return t.unify(this, b);
-        else if (t instanceof VariableGroup)
-            return mergeGroup((VariableGroup)t, b);
+        System.out.println("VariableGroup unify " + this + ", " + t);
+        if (t instanceof VariableType) {
+            VariableType v = (VariableType)t;
+            if (b.get(v) == null) {
+                vars.add(v);
+                b.put(v, this);
+                return true;
+            } else
+                return t.unify(this, b);
+        } else if (t instanceof VariableGroup)
+            return bind(b, this, (VariableGroup)t);
         else /* t instanceof ConcreteType */
             return bindAll((ConcreteType)t, b);
     }

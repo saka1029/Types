@@ -1,11 +1,17 @@
 package types;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
-public class Bind {
+public class Bind implements Iterable<Entry<VariableType, ConcreteType>>{
 
     private final Map<VariableType, ConcreteType> bind = new HashMap<>();
+
+    public int size() {
+        return bind.size();
+    }
 
     public ConcreteType get(VariableType v) {
         return bind.get(v);
@@ -16,9 +22,12 @@ public class Bind {
     }
 
     @Override
+    public Iterator<Entry<VariableType, ConcreteType>> iterator() {
+        return bind.entrySet().iterator();
+    }
+
+    @Override
     public String toString() {
         return "bind" + bind;
     }
-
-
 }
